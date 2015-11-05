@@ -1,6 +1,16 @@
-inputvars<-MLdata[-c(1:3),4:8]
-resp<-MLdata[-c(1:3),3]
-dat.in<-data.frame(resp,inputvars)
+## Pull and format data -----
+
+inputvars <- MLdata[-c(1:3),4:8]
+resp <- MLdata[-c(1:3),3]
+dat.in <- data.frame(resp,inputvars)
+
+## separate into training and evaluation sets ----
+
+numTrainObs <- 400
+datTrain <- dat.in[1:numTrainObs, ]
+datEval <- dat.in[(numTrainObs + 1):dim(dat.in)[1], ]
+
+## TODO: update model below to pull correct data ----
 #nnet function from nnet package
 library(nnet)
 set.seed(seed.val)
