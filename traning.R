@@ -1,3 +1,9 @@
+## Load libraries -----
+
+library(nnet)
+
+seed.val <- 1234
+
 ## Pull and format data -----
 
 inputvars <- MLdata[-c(1:3),4:8]
@@ -7,12 +13,17 @@ dat.in <- data.frame(resp,inputvars)
 ## separate into training and evaluation sets ----
 
 numTrainObs <- 400
+## training set 
 datTrain <- dat.in[1:numTrainObs, ]
+inputTrain <- datTrain[, 4:8]
+respTrain <- datTrain[, 3]
+## eval set
 datEval <- dat.in[(numTrainObs + 1):dim(dat.in)[1], ]
+inputEval <- datEval[, 4:8]
+respEval <- datEval[, 3]
 
 ## TODO: update model below to pull correct data ----
 #nnet function from nnet package
-library(nnet)
 set.seed(seed.val)
 mod1<-nnet(inputvars,resp,data=dat.in,size=10,linout=T)
 
