@@ -1,10 +1,17 @@
 ## Load libraries -----
 
 library(nnet)
+library(caret)
+
+## maybe use caret as recommended here: http://stackoverflow.com/questions/7743768/using-nnet-for-prediction-am-i-doing-it-right
+## however the SO post doesn't seem to have separate training and prediction sets, is this an error?
 
 seed.val <- 1234
 
-## Pull and format data -----
+## Load and format data -----
+
+MLdata <- read.csv(file = "MLdata_with_BS.csv", header = TRUE)
+MLdata <- MLdata[-c(1:3),]
 
 inputvars <- MLdata[-c(1:3),4:8]
 resp <- MLdata[-c(1:3),3]
@@ -15,17 +22,33 @@ dat.in <- data.frame(resp,inputvars)
 numTrainObs <- 400
 ## training set 
 datTrain <- dat.in[1:numTrainObs, ]
-inputTrain <- datTrain[, 4:8]
-respTrain <- datTrain[, 3]
+inputTrain <- datTrain[, 2:6]
+respTrain <- datTrain[, 1]
 ## eval set
 datEval <- dat.in[(numTrainObs + 1):dim(dat.in)[1], ]
-inputEval <- datEval[, 4:8]
-respEval <- datEval[, 3]
+inputEval <- datEval[, 2:6]
 
-## TODO: update model below to pull correct data ----
-#nnet function from nnet package
+## Actual option, and Black-Scholes, values to compare to evaluation predictions ----
+respEval <- datEval[, 1]
+BS <- MLdata$Black.Scholes[(numTrainObs + 1):dim(dat.in)[1]]
+
+## 
+# nnet function from nnet package
 set.seed(seed.val)
-mod1<-nnet(inputvars,resp,data=dat.in,size=10,linout=T)
+mod1 <- nnet(inputvars,resp,data=dat.in,size=10,linout=T)
+
+## predict based on mod1
+
+predictions <- predict(mod1, inputEval) 
+
+predError <- abs(predictions - respEval)
+BSError <- abs(BS - respEval)
+
+## plot
+plot(BSError, type = 'p', col = 'blue', main = "nnet Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
+lines(predError, type = 'p', col = "green")
+legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue", "green"), pch = c(1,1))
+
 
 ##Have not changed below this line
 
