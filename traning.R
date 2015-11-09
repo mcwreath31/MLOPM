@@ -1,6 +1,7 @@
 ## Load libraries -----
 
 library(nnet)
+library(RSNNS)
 library(caret)
 
 ## maybe use caret as recommended here: http://stackoverflow.com/questions/7743768/using-nnet-for-prediction-am-i-doing-it-right
@@ -13,29 +14,30 @@ seed.val <- 1234
 MLdata <- read.csv(file = "MLdata_with_BS.csv", header = TRUE)
 MLdata <- MLdata[-c(1:3),]
 
-inputvars <- MLdata[-c(1:3),4:8]
-resp <- MLdata[-c(1:3),3]
-dat.in <- data.frame(resp,inputvars)
+inputFull <- MLdata[-c(1:3),4:8]
+respFull <- MLdata[-c(1:3),3]
+dataFull <- data.frame(respFull, inputFull)
+
 
 ## separate into training and evaluation sets ----
-
 numTrainObs <- 400
 ## training set 
-datTrain <- dat.in[1:numTrainObs, ]
+datTrain <- dataFull[1:numTrainObs, ]
 inputTrain <- datTrain[, 2:6]
 respTrain <- datTrain[, 1]
+dataTrain <- data.frame(respTrain, inputTrain)
 ## eval set
-datEval <- dat.in[(numTrainObs + 1):dim(dat.in)[1], ]
+datEval <- dataFull[(numTrainObs + 1):dim(dataFull)[1], ]
 inputEval <- datEval[, 2:6]
 
 ## Actual option, and Black-Scholes, values to compare to evaluation predictions ----
 respEval <- datEval[, 1]
-BS <- MLdata$Black.Scholes[(numTrainObs + 1):dim(dat.in)[1]]
+BS <- MLdata$Black.Scholes[(numTrainObs + 1):dim(dataFull)[1]]
 
 ## 
 # nnet function from nnet package
 set.seed(seed.val)
-mod1 <- nnet(inputvars,resp,data=dat.in,size=10,linout=T)
+mod1 <- nnet(inputTrain, respTrain,data=dataFull,size=10,linout=T)
 
 ## predict based on mod1
 
@@ -50,15 +52,19 @@ lines(predError, type = 'p', col = "green")
 legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue", "green"), pch = c(1,1))
 
 
+
+### mlp function from RSNNS package
+
+set.seed(seed.val)
+mod3<-mlp(rand.vars, resp, size=10,linOut=T)
+
+
+
 ##Have not changed below this line
 
 #neuralnet function from neuralnet package, notice use of only one response
 library(neuralnet)
 form.in<-as.formula('Y1~X1+X2+X3+X4+X5+X6+X7+X8')
 set.seed(seed.val)
-mod2<-neuralnet(form.in,data=dat.in,hidden=10)
+mod2<-neuralnet(form.in,data=dataFull,hidden=10)
 
-#mlp function from RSNNS package
-library(RSNNS)
-set.seed(seed.val)
-mod3<-mlp(rand.vars, resp, size=10,linOut=T)
