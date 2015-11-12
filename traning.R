@@ -63,7 +63,7 @@ predictionsRSNNS <- predict(mod3, inputEval)
 predErrorRSNNS <- abs(predictionsRSNNS - respEval)
 
 ## plot
-plot(BSError, type = 'p', col = 'blue', main = "nnet Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
+plot(BSError, type = 'p', col = 'blue', main = "RSNNS Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
 lines(predErrorRSNNS, type = 'p', col = "green")
 legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue", "green"), pch = c(1,1))
 ## result doesn't look good
