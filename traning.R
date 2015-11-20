@@ -3,6 +3,7 @@
 library(nnet)
 library(RSNNS)
 library(caret)
+library(neuralnet)
 
 ## maybe use caret as recommended here: http://stackoverflow.com/questions/7743768/using-nnet-for-prediction-am-i-doing-it-right
 ## however the SO post doesn't seem to have separate training and prediction sets, is this an error?
@@ -13,8 +14,8 @@ MLdata <- read.csv(file = "MLdata_with_BS.csv", header = TRUE)
 MLdata <- MLdata[-c(1:3),]
 
 inputFull <- MLdata[-c(1:3),4:8]
-respFull <- MLdata[-c(1:3),3]
-dataFull <- data.frame(respFull, inputFull)
+optionPrices <- MLdata[-c(1:3),3]
+dataFull <- data.frame(optionPrices, inputFull)
 
 
 ## separate into training and evaluation sets ----
@@ -50,14 +51,14 @@ BSError <- abs(BS - respEval)
 ## plot
 plot(BSError, type = 'p', col = 'blue', main = "nnet Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
 lines(predError, type = 'p', col = "green")
-legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue", "green"), pch = c(1,1))
+legend('topright', legend = c(paste("Black-Scholes Error (Avg. $", round(mean(BSError), 2), ")", sep = ""), paste("ANN Error (Avg. $", round(mean(predError), 2), ")", sep = "")), col = c("blue", "green"), pch = c(1,1))
 ## result looks good 
 
 
 ### mlp function from RSNNS package -----------
 
-set.seed(seed.val)
-mod3 <- mlp(inputTrain, respTrain, size=10, linOut=T)
+
+mod3 <- mlp(inputTrain, respTrain, size = 2, linOut=T)
 
 predictionsRSNNS <- predict(mod3, inputEval) 
 
@@ -66,15 +67,22 @@ predErrorRSNNS <- abs(predictionsRSNNS - respEval)
 ## plot
 plot(BSError, type = 'p', col = 'blue', main = "RSNNS Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
 lines(predErrorRSNNS, type = 'p', col = "green")
-legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue", "green"), pch = c(1,1))
-## result doesn't look good
+legend('topright', legend = c(paste("Black-Scholes Error (Avg. $", round(mean(BSError), 2), ")", sep = ""), paste("RSNNS Error (Avg. $", round(mean(predErrorRSNNS), 2), ")", sep = "")), col = c("blue", "green"), pch = c(1,1))
+## results doesn't look as good as nnet
 
-
-##Have not changed below this line
 
 ### neuralnet function from neuralnet package, notice use of only one response ---------
-library(neuralnet)
-form.in<-as.formula('Y1~X1+X2+X3+X4+X5+X6+X7+X8')
-set.seed(seed.val)
-mod2<-neuralnet(form.in,data=dataFull,hidden=10)
 
+form.in <- as.formula('optionPrices ~ TWTR + Strike + Time + IVlagged + rf')
+mod2 <- neuralnet(form.in, data = datTrain, hidden = 7, algorithm = "rprop+")
+
+predictionsNeuNet <- compute(mod2, covariate = inputEval)$net.result
+
+predErrorNeuNet <- abs(predictionsNeuNet - respEval)
+
+## plot
+plot(BSError, type = 'p', col = 'blue', main = "neuralnet Neural Net Model vs Black-Scholes: Out of Sample Test", ylab = "Valuation Error")
+lines(predErrorNeuNet, type = 'p', col = "green")
+legend('topright', legend = c(paste("Black-Scholes Error (Avg. $", round(mean(BSError), 2), ")", sep = ""), paste("neuralnet Error (Avg. $", round(mean(predErrorNeuNet), 2), ")", sep = "")), col = c("blue", "green"), pch = c(1,1))
+
+plot.nn(mod2)
