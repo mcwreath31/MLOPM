@@ -7,8 +7,6 @@ library(caret)
 ## maybe use caret as recommended here: http://stackoverflow.com/questions/7743768/using-nnet-for-prediction-am-i-doing-it-right
 ## however the SO post doesn't seem to have separate training and prediction sets, is this an error?
 
-seed.val <- 1234
-
 ## Load and format data -----
 
 MLdata <- read.csv(file = "MLdata_with_BS.csv", header = TRUE)
@@ -21,23 +19,26 @@ dataFull <- data.frame(respFull, inputFull)
 
 ## separate into training and evaluation sets ----
 numTrainObs <- 400
-## training set 
+
+## Create training set 
 datTrain <- dataFull[1:numTrainObs, ]
 inputTrain <- datTrain[, 2:6]
 respTrain <- datTrain[, 1]
 dataTrain <- data.frame(respTrain, inputTrain)
-## eval set
+
+
+## Crete evaluation set
 datEval <- dataFull[(numTrainObs + 1):dim(dataFull)[1], ]
 inputEval <- datEval[, 2:6]
 
 ## Actual option, and Black-Scholes, values to compare to evaluation predictions ----
-respEval <- datEval[, 1]
-BS <- MLdata$Black.Scholes[(numTrainObs + 1):dim(dataFull)[1]]
+respEval <- datEval[, 1] # these are the actual option prices
+BS <- MLdata$Black.Scholes[(numTrainObs + 1):dim(dataFull)[1]] #Black-Scholes prices
 
-## 
-                                        # nnet function from nnet package
-set.seed(seed.val)
-mod1 <- nnet(inputTrain, respTrain,data=dataFull,size=10,linout=T)
+### Neural Net Models ---------
+
+## nnet function from nnet package
+mod1 <- nnet(inputTrain, respTrain,data=datTrain, size=10, linout=T)
 
 ## predict based on mod1
 
@@ -56,7 +57,7 @@ legend('topright', legend = c("Black-Scholes Error", "ANN Error"), col = c("blue
 ### mlp function from RSNNS package -----------
 
 set.seed(seed.val)
-mod3 <- mlp(inputTrain, respTrain, size=10,linOut=T)
+mod3 <- mlp(inputTrain, respTrain, size=10, linOut=T)
 
 predictionsRSNNS <- predict(mod3, inputEval) 
 
