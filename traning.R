@@ -4,6 +4,7 @@ library(nnet)
 library(RSNNS)
 library(caret)
 library(neuralnet)
+library(FCNN4R)
 
 ## maybe use caret as recommended here: http://stackoverflow.com/questions/7743768/using-nnet-for-prediction-am-i-doing-it-right
 ## however the SO post doesn't seem to have separate training and prediction sets, is this an error?
@@ -86,3 +87,12 @@ lines(predErrorNeuNet, type = 'p', col = "green")
 legend('topright', legend = c(paste("Black-Scholes Error (Avg. $", round(mean(BSError), 2), ")", sep = ""), paste("neuralnet Error (Avg. $", round(mean(predErrorNeuNet), 2), ")", sep = "")), col = c("blue", "green"), pch = c(1,1))
 
 plot.nn(mod2)
+
+### FCNN4R neural nets
+
+net <- mlp_net(c(5, 10, 1))
+
+
+
+
+### Other (non-neural-net) methods -----
