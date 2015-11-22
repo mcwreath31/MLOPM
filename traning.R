@@ -88,11 +88,23 @@ legend('topright', legend = c(paste("Black-Scholes Error (Avg. $", round(mean(BS
 
 plot.nn(mod2)
 
-### FCNN4R neural nets
-
+### FCNN4R neural nets ----
+## code from package description 
 net <- mlp_net(c(5, 10, 1))
+# randomise weights
+net <- mlp_rnd_weights(net)
+# tolerance level
+tol <- 0.5e-3
 
-
-
+# teach using Rprop, assign trained network and plot learning history
+while (mlp_mse(net, as.matrix(inputTrain), as.matrix(respTrain)) > tol) {
+    net <- mlp_rnd_weights(net)
+    netmse <- mlp_teach_rprop(net, as.matrix(inputTrain), as.matrix(respTrain), tol_level = tol,
+                              max_epochs = 500, report_freq = 10)
+    net <- netmse$net
+}
+## result: doesn't converge in a reasonable amount of time.
 
 ### Other (non-neural-net) methods -----
+
+## Support Vector Machines
